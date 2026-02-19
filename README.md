@@ -18,9 +18,9 @@
 
 <p align="center">
   👤 <strong>Team:</strong> Neuron.dev &nbsp;|&nbsp; 🧑‍💻 <strong>Team :</strong> Ankit Kumar (Leader) <br>
-  Mukesh Kumar
-  Deepa Tiwari
-  Abhisek Kumar
+  Mukesh Kumar <br>
+  Deepa Tiwari <br>
+  Abhisek Kumar <br>
 </p>
 
 ---
