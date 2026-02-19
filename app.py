@@ -171,5 +171,5 @@ def request_entity_too_large(error):
     return jsonify({
         "error": "File too large. Maximum file size is 5MB.",
         "error_code": "FILE_TOO_LARGE"
-    }), 413
+    })
 
