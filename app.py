@@ -9,6 +9,7 @@ from utils.validators import validate_file_extension, validate_file_size, valida
 
 app = Flask(__name__)
 
+app.json.sort_keys = False
 app.config['MAX_CONTENT_LENGTH'] = 5 * 1024 * 1024
 
 SUPPORTED_DRUGS = [d.upper() for d in PRIMARY_GENE_MAP.keys()]
@@ -171,3 +172,4 @@ def request_entity_too_large(error):
         "error": "File too large. Maximum file size is 5MB.",
         "error_code": "FILE_TOO_LARGE"
     }), 413
+
