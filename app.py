@@ -47,10 +47,42 @@ def save_scan(user_id, data):
         return None
 
 @app.route("/")
-def index():
+def landing():
     if current_user.is_authenticated:
         return redirect(url_for('dashboard'))
-    return render_template("login.html")
+    return render_template("landing.html")
+
+@app.route("/demo")
+def demo():
+    # High-fidelity sample data for public demo
+    sample_data = {
+        "patient_id": "DEMO-PATIENT-01",
+        "drug": "WARFARIN",
+        "timestamp": datetime.now().strftime('%Y-%m-%d %H:%M:%S'),
+        "parsing_status": "success",
+        "pharmacogenomic_profile": {
+            "primary_gene": "CYP2C9",
+            "phenotype": "Poor Metabolizer",
+            "diplotype": "*3/*3",
+            "detected_variants": [
+                {"rsid": "rs1057910", "genotype": "C/C", "gene": "CYP2C9"}
+            ]
+        },
+        "risk_assessment": {
+            "risk_label": "TOXIC",
+            "severity": "high",
+            "confidence_score": 0.98
+        },
+        "clinical_recommendation": {
+            "action": "Significant Dose Reduction Required",
+            "dose_adjustment": "Reduce starting dose by 50-75%",
+            "monitoring": "Daily INR monitoring until stable"
+        },
+        "llm_generated_explanation": {
+            "summary": "This patient is a CYP2C9 Poor Metabolizer (*3/*3), which significantly impairs the metabolism of S-warfarin. This leads to higher plasma concentrations and a vastly increased risk of bleeding. Clinical guidelines (CPIC) strongly recommend a major reduction in the initial warfarin dose and frequent monitoring to prevent over-anticoagulation."
+        }
+    }
+    return render_template("results.html", saved_report=sample_data, from_history=False)
 
 @app.route("/analyze-page")
 @login_required

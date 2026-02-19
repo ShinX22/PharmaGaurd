@@ -1,0 +1,144 @@
+{% extends "base.html" %}
+
+{% block title %}Precision Pharmacogenomics Decision Support{% endblock %}
+
+{% block navbar %}
+{# Landing page has a simplified navbar or we can keep the standard one.
+The request says match EXACT existing palette and behavior. #}
+<nav class="navbar">
+    <a href="{{ url_for('landing') }}" class="navbar-brand">Pharmacogenomics Analysis</a>
+    <div class="navbar-links">
+        {% if current_user.is_authenticated %}
+        <a href="{{ url_for('dashboard') }}">Dashboard</a>
+        {% else %}
+        <a href="{{ url_for('login') }}">Login</a>
+        {% endif %}
+        <button class="theme-toggle" id="themeToggle" onclick="toggleTheme()">
+            <svg class="sun-icon" viewBox="0 0 24 24" fill="none" stroke="#f39c12" stroke-width="2"
+                stroke-linecap="round" stroke-linejoin="round" style="width: 18px; height: 18px;">
+                <circle cx="12" cy="12" r="5"></circle>
+                <line x1="12" y1="1" x2="12" y2="3"></line>
+                <line x1="12" y1="21" x2="12" y2="23"></line>
+                <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+                <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+                <line x1="1" y1="12" x2="3" y2="12"></line>
+                <line x1="21" y1="12" x2="23" y2="12"></line>
+                <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+                <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+            </svg>
+            <svg class="moon-icon" style="display:none; width: 18px; height: 18px;" viewBox="0 0 24 24" fill="none"
+                stroke="var(--accent)" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M21 12.79A9 9 0 1 1 11.21 3 7 7 0 0 0 21 12.79z"></path>
+            </svg>
+        </button>
+    </div>
+</nav>
+{% endblock %}
+
+{% block content %}
+<div class="hero-section">
+    <div class="hero-content">
+        <h1>Precision Pharmacogenomics Decision Support</h1>
+        <p class="subtitle">AI-powered drug-gene interaction analysis for clinical and research use. Harness the power
+            of genomics to optimize patient care.</p>
+
+        <div class="trust-indicators">
+            <div class="trust-item">
+                <svg viewBox="0 0 24 24" fill="currentColor" style="width: 16px; height: 16px;">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
+                </svg>
+                CPIC-aligned
+            </div>
+            <div class="trust-item">
+                <svg viewBox="0 0 24 24" fill="currentColor" style="width: 16px; height: 16px;">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
+                </svg>
+                VCF v4.2 compatible
+            </div>
+            <div class="trust-item">
+                <svg viewBox="0 0 24 24" fill="currentColor" style="width: 16px; height: 16px;">
+                    <path d="M9 16.17L4.83 12l-1.42 1.41L9 19 21 7l-1.41-1.41L9 16.17z" />
+                </svg>
+                Secure local processing
+            </div>
+        </div>
+
+        <div class="visual-block">
+            <div class="mock-card">
+                <div class="mock-badge">TOXIC RISK</div>
+                <div class="mock-results-title">Sample Analysis Preview</div>
+                <div class="mock-line"></div>
+                <div class="mock-line medium"></div>
+                <div class="mock-line short"></div>
+                <div style="margin-top: 24px; color: var(--text-muted); font-size: 11px; font-style: italic;">
+                    High sensitivity to Warfarin detected via CYP2C9 variants.
+                </div>
+            </div>
+        </div>
+
+        <div class="cta-group">
+            <a href="{{ url_for('dashboard' if current_user.is_authenticated else 'login') }}" class="cta-primary">
+                <svg viewBox="0 0 24 24" fill="currentColor" style="width: 20px; height: 20px;">
+                    <path d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+                Start Analysis
+            </a>
+            <a href="{{ url_for('demo') }}" class="cta-secondary">View Demo</a>
+        </div>
+    </div>
+</div>
+
+<div class="features-section">
+    <h2>Why Choose Our Platform?</h2>
+    <div class="feature-grid">
+        <div class="feature-card">
+            <div class="feature-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 2L4.5 20.29l.71.71L12 18l6.79 3 .71-.71z" />
+                </svg>
+            </div>
+            <h3>Clinical-Grade Risk Assessment</h3>
+            <p>Advanced scoring algorithms provide high-fidelity risk labels based on normalized genetic data and
+                clinical parameters.</p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M15.5 14h-.79l-.28-.27A6.471 6.471 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z" />
+                </svg>
+            </div>
+            <h3>Genetic Variant Interpretation</h3>
+            <p>Automatic parsing of VCF files to identify actionable SNVs and indels across 30+ pharmacogenomically
+                significant genes.</p>
+        </div>
+
+        <div class="feature-card">
+            <div class="feature-icon">
+                <svg viewBox="0 0 24 24" fill="currentColor">
+                    <path
+                        d="M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm-5 14H7v-2h7v2zm3-4H7v-2h10v2zm0-4H7V7h10v2z" />
+                </svg>
+            </div>
+            <h3>Actionable CPIC Recommendations</h3>
+            <p>Direct integration with newest CPIC guidelines to provide clinicians with clear dosage adjustments and
+                therapeutic alternatives.</p>
+        </div>
+    </div>
+</div>
+
+<div class="footer-landing">
+    <div class="project-name">Pharmacogenomics Analysis</div>
+    <div class="built-for">Built for RIFT 2026</div>
+    <div class="legal">
+        This platform is a clinical decision support system. All recommendations should be reviewed by a certified
+        healthcare professional before inclusion in clinical practice.
+    </div>
+</div>
+{% endblock %}
+
+{% block footer %}
+{# Empty block to prevent the base.html footer from showing if there is a redundant one,
+or we can just let it sit. The request asked for a minimal footer on landing. #}
+{% endblock %}
