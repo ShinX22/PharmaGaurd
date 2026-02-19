@@ -1892,7 +1892,6 @@
             
             document.body.removeChild(textArea);
         }
-        }
 
         function showToast(message) {
             const toast = document.createElement('div');
@@ -1951,14 +1950,18 @@
         initTheme();
         
         // Check for saved report (from history)
+```javascript
         {% if saved_report %}
         (function() {
             const savedData = {{ saved_report | tojson }};
-            document.getElementById('formContainer').style.display = 'none';
-            document.getElementById('loading').classList.remove('active');
-            displayResult(savedData);
+            if (savedData) {
+                document.getElementById('formContainer').style.display = 'none';
+                document.getElementById('loading').classList.remove('active');
+                displayResult(savedData);
+            }
         })();
         {% endif %}
+```
     </script>
 </body>
 </html>
