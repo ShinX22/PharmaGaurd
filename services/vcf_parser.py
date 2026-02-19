@@ -7,6 +7,14 @@ SUPPORTED_RSIDS = {
     "rs3918290": "DPYD"
 }
 
+def validate_vcf_header(content):
+    lines = content.split("\n")
+    for line in lines[:50]:
+        if line.startswith("##fileformat=VCFv4.2"):
+            return True
+    return False
+
+
 def parse_vcf(file_stream):
     variants = []
     
@@ -15,6 +23,9 @@ def parse_vcf(file_stream):
         
         if isinstance(content, bytes):
             content = content.decode("utf-8")
+        
+        if not validate_vcf_header(content):
+            raise ValueError("Invalid VCF format: missing ##fileformat=VCFv4.2 header")
         
         lines = content.split("\n")
         
@@ -49,6 +60,8 @@ def parse_vcf(file_stream):
                 "genotype": genotype
             })
     
+    except ValueError:
+        raise
     except Exception as e:
         return []
     

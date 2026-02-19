@@ -14,4 +14,8 @@ def evaluate_risk(drug, phenotype):
         return "Adjust Dosage", "moderate", 0.75
     elif phenotype == "NM":
         return "Safe", "low", 0.60
+    elif phenotype == "RM":
+        return "Safe", "low", 0.55
+    elif phenotype == "UM" or phenotype == "URM":
+        return "Adjust Dosage", "moderate", 0.70
     return "Unknown", "none", 0.0

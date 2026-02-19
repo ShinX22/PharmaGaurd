@@ -195,17 +195,170 @@
         }
         
         .risk-badge {
-            display: inline-block;
-            padding: 6px 16px;
-            border-radius: 20px;
-            font-weight: 600;
-            font-size: 14px;
+            display: inline-flex;
+            align-items: center;
+            gap: 8px;
+            padding: 10px 24px;
+            border-radius: 25px;
+            font-weight: 700;
+            font-size: 18px;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
         }
         
-        .risk-toxic { background: #ffebee; color: #c62828; }
-        .risk-adjust { background: #fff3e0; color: #ef6c00; }
-        .risk-safe { background: #e8f5e9; color: #2e7d32; }
-        .risk-unknown { background: #eceff1; color: #546e7a; }
+        .risk-badge svg {
+            width: 20px;
+            height: 20px;
+        }
+        
+        .risk-toxic { background: #ffebee; color: #c62828; border: 2px solid #c62828; }
+        .risk-adjust { background: #fff3e0; color: #ef6c00; border: 2px solid #ef6c00; }
+        .risk-safe { background: #e8f5e9; color: #2e7d32; border: 2px solid #2e7d32; }
+        .risk-unknown { background: #eceff1; color: #546e7a; border: 2px solid #546e7a; }
+        .risk-ineffective { background: #ffebee; color: #c62828; border: 2px solid #c62828; }
+        
+        .collapsible-section {
+            margin-bottom: 16px;
+            border-radius: 8px;
+            overflow: hidden;
+        }
+        
+        .collapsible-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            padding: 16px 20px;
+            cursor: pointer;
+            transition: background 0.3s;
+            user-select: none;
+        }
+        
+        .collapsible-header:hover {
+            background: rgba(102, 126, 234, 0.08);
+        }
+        
+        .collapsible-header h3 {
+            margin: 0;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+        
+        .collapsible-icon {
+            transition: transform 0.3s ease;
+            font-size: 12px;
+            color: #667eea;
+        }
+        
+        .collapsible-section.expanded .collapsible-icon {
+            transform: rotate(180deg);
+        }
+        
+        .collapsible-content {
+            max-height: 0;
+            overflow: hidden;
+            transition: max-height 0.3s ease-out;
+        }
+        
+        .collapsible-section.expanded .collapsible-content {
+            max-height: 2000px;
+        }
+        
+        .collapsible-section .result-section {
+            margin-bottom: 0;
+            border-radius: 0;
+            border-left: none;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .collapsible-section .result-section:last-child {
+            border-bottom: none;
+        }
+        
+        #riskSection .collapsible-header {
+            background: #f0f0f0;
+        }
+        
+        #pgxProfileSection.collapsible-section .collapsible-header,
+        #clinicalRecSection.collapsible-section .collapsible-header,
+        #explanationSection.collapsible-section .collapsible-header,
+        #jsonSection.collapsible-section .collapsible-header {
+            background: #f8f9ff;
+            border-bottom: 1px solid #e0e0e0;
+        }
+        
+        .cpic-note {
+            text-align: center;
+            padding: 15px;
+            background: #e8f5e9;
+            color: #2e7d32;
+            font-size: 12px;
+            border-top: 1px solid #c8e6c9;
+        }
+        
+        .cpic-note svg {
+            width: 14px;
+            height: 14px;
+            vertical-align: middle;
+            margin-right: 4px;
+        }
+        
+        @media (max-width: 600px) {
+            .container {
+                margin: 0;
+                border-radius: 0;
+                min-height: 100vh;
+            }
+            
+            body {
+                padding: 0;
+            }
+            
+            .header {
+                padding: 20px;
+            }
+            
+            .header h1 {
+                font-size: 22px;
+            }
+            
+            .form-container, .result-container {
+                padding: 15px;
+            }
+            
+            .result-label {
+                width: 120px;
+                font-size: 13px;
+            }
+            
+            .result-value {
+                font-size: 13px;
+            }
+            
+            .risk-badge {
+                padding: 8px 16px;
+                font-size: 14px;
+            }
+            
+            .drug-card {
+                padding: 12px;
+            }
+            
+            .action-buttons {
+                flex-direction: column;
+            }
+            
+            .action-btn {
+                width: 100%;
+                justify-content: center;
+            }
+            
+            .result-header {
+                flex-direction: column;
+                gap: 10px;
+                text-align: center;
+            }
+        }
         
         .severity-none { color: #9e9e9e; }
         .severity-low { color: #4caf50; }
@@ -430,7 +583,7 @@
                 </div>
             </div>
             
-            <div class="result-section">
+            <div class="result-section" id="riskSection">
                 <h3>Risk Assessment</h3>
                 <div class="result-item">
                     <span class="result-label">Risk Label:</span>
@@ -446,59 +599,92 @@
                 </div>
             </div>
             
-            <div class="result-section" id="pgxProfileSection">
-                <h3>Pharmacogenomic Profile</h3>
-                <div class="result-item">
-                    <span class="result-label">Primary Gene:</span>
-                    <span class="result-value" id="resGene"></span>
+            <div class="collapsible-section" id="pgxProfileSection">
+                <div class="collapsible-header" onclick="toggleSection(this)">
+                    <h3>Pharmacogenomic Profile <span style="font-weight:400;color:#666;font-size:14px;">(Click to expand)</span></h3>
+                    <span class="collapsible-icon">▼</span>
                 </div>
-                <div class="result-item">
-                    <span class="result-label">Phenotype:</span>
-                    <span class="result-value" id="resPhenotype"></span>
-                </div>
-                <div class="result-item">
-                    <span class="result-label">Diplotype:</span>
-                    <span class="result-value" id="resDiplotype"></span>
-                </div>
-                <div class="result-item">
-                    <span class="result-label">Detected Variants:</span>
-                    <span class="result-value" id="resVariants"></span>
-                </div>
-            </div>
-            
-            <div class="result-section" id="clinicalRecSection">
-                <h3>Clinical Recommendation</h3>
-                <div class="result-item">
-                    <span class="result-label">Action:</span>
-                    <span class="result-value" id="resAction"></span>
-                </div>
-                <div class="result-item">
-                    <span class="result-label">Dose Adjustment:</span>
-                    <span class="result-value" id="resDose"></span>
-                </div>
-                <div class="result-item">
-                    <span class="result-label">Monitoring:</span>
-                    <span class="result-value" id="resMonitoring"></span>
+                <div class="collapsible-content">
+                    <div class="result-section" style="background: #fff;">
+                        <div class="result-item">
+                            <span class="result-label">Primary Gene:</span>
+                            <span class="result-value" id="resGene"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Phenotype:</span>
+                            <span class="result-value" id="resPhenotype"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Diplotype:</span>
+                            <span class="result-value" id="resDiplotype"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Detected Variants:</span>
+                            <span class="result-value" id="resVariants"></span>
+                        </div>
+                    </div>
                 </div>
             </div>
             
-            <div class="result-section">
-                <h3>Explanation</h3>
-                <p id="resExplanation"></p>
+            <div class="collapsible-section" id="clinicalRecSection">
+                <div class="collapsible-header" onclick="toggleSection(this)">
+                    <h3>Clinical Recommendation <span style="font-weight:400;color:#666;font-size:14px;">(Click to expand)</span></h3>
+                    <span class="collapsible-icon">▼</span>
+                </div>
+                <div class="collapsible-content">
+                    <div class="result-section" style="background: #fff;">
+                        <div class="result-item">
+                            <span class="result-label">Action:</span>
+                            <span class="result-value" id="resAction"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Dose Adjustment:</span>
+                            <span class="result-value" id="resDose"></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Monitoring:</span>
+                            <span class="result-value" id="resMonitoring"></span>
+                        </div>
+                    </div>
+                </div>
             </div>
             
-            <div class="result-section">
-                <h3>Raw JSON Response</h3>
-                <pre class="json-output" id="resJson"></pre>
-                <div class="action-buttons">
-                    <button type="button" class="action-btn btn-download" onclick="downloadJson()">Download JSON</button>
-                    <button type="button" class="action-btn btn-copy" onclick="copyToClipboard()" id="copyBtn">Copy to Clipboard</button>
+            <div class="collapsible-section" id="explanationSection">
+                <div class="collapsible-header" onclick="toggleSection(this)">
+                    <h3>Explanation <span style="font-weight:400;color:#666;font-size:14px;">(Click to expand)</span></h3>
+                    <span class="collapsible-icon">▼</span>
+                </div>
+                <div class="collapsible-content">
+                    <div class="result-section" style="background: #fff;">
+                        <p id="resExplanation"></p>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="collapsible-section" id="jsonSection">
+                <div class="collapsible-header" onclick="toggleSection(this)">
+                    <h3>Raw JSON Response <span style="font-weight:400;color:#666;font-size:14px;">(Click to expand)</span></h3>
+                    <span class="collapsible-icon">▼</span>
+                </div>
+                <div class="collapsible-content">
+                    <div class="result-section" style="background: #fff; border: none;">
+                        <pre class="json-output" id="resJson"></pre>
+                        <div class="action-buttons">
+                            <button type="button" class="action-btn btn-download" onclick="downloadJson()">Download JSON</button>
+                            <button type="button" class="action-btn btn-copy" onclick="copyToClipboard()" id="copyBtn">Copy to Clipboard</button>
+                        </div>
+                    </div>
                 </div>
             </div>
             
             <div class="result-section" id="multiDrugSection" style="display: none;">
                 <h3>Multi-Drug Analysis Results</h3>
                 <div id="multiDrugResults"></div>
+            </div>
+            
+            <div class="cpic-note">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2L1 21h22L12 2zm0 3.99L19.53 19H4.47L12 5.99zM11 16h2v2h-2v-2zm0-6h2v4h-2v-4z"/></svg>
+                Recommendations aligned with CPIC pharmacogenomic guidelines.
             </div>
         </div>
     </div>
@@ -518,6 +704,31 @@
         const submitBtn = document.getElementById('submitBtn');
         
         let currentJsonData = null;
+
+        function toggleSection(header) {
+            const section = header.parentElement;
+            section.classList.toggle('expanded');
+        }
+        
+        function initializeCollapsibleSections() {
+            const riskSection = document.getElementById('riskSection');
+            if (riskSection) {
+                riskSection.classList.add('expanded');
+            }
+        }
+        
+        function getRiskIcon(riskLabel) {
+            const safeIcon = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm-2 15l-5-5 1.41-1.41L10 14.17l7.59-7.59L19 8l-9 9z"/></svg>';
+            const adjustIcon = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M1 21h22L12 2 1 21zm12-3h-2v-2h2v2zm0-4h-2v-4h2v4z"/></svg>';
+            const toxicIcon = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-2h2v2zm0-4h-2V7h2v6z"/></svg>';
+            const unknownIcon = '<svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm1 15h-2v-6h2v6zm0-8h-2V7h2v2z"/></svg>';
+            
+            const label = riskLabel.toLowerCase();
+            if (label === 'safe') return safeIcon;
+            if (label === 'adjust dosage') return adjustIcon;
+            if (label === 'toxic' || label === 'ineffective') return toxicIcon;
+            return unknownIcon;
+        }
 
         function formatFileSize(bytes) {
             if (bytes < 1024) return bytes + ' B';
@@ -621,6 +832,7 @@
         function displayResult(data) {
             resultContainer.style.display = 'block';
             currentJsonData = data;
+            initializeCollapsibleSections();
             
             document.getElementById('resPatientId').textContent = data.patient_id || 'N/A';
             document.getElementById('resDrug').textContent = data.drug || 'N/A';
@@ -639,10 +851,12 @@
             document.getElementById('multiDrugSection').style.display = 'none';
             document.getElementById('pgxProfileSection').style.display = 'block';
             document.getElementById('clinicalRecSection').style.display = 'block';
+            document.getElementById('explanationSection').style.display = 'block';
+            document.getElementById('jsonSection').style.display = 'block';
             
             const riskLabel = data.risk_assessment?.risk_label || 'Unknown';
             const riskEl = document.getElementById('resRiskLabel');
-            riskEl.textContent = riskLabel;
+            riskEl.innerHTML = getRiskIcon(riskLabel) + ' ' + riskLabel;
             riskEl.className = 'risk-badge risk-' + riskLabel.toLowerCase().replace(' ', '');
             
             const severity = data.risk_assessment?.severity || 'none';
@@ -688,7 +902,7 @@
             
             const riskLabel = data.risk_assessment?.risk_label || 'Unknown';
             const riskEl = document.getElementById('resRiskLabel');
-            riskEl.textContent = riskLabel;
+            riskEl.innerHTML = getRiskIcon(riskLabel) + ' ' + riskLabel;
             riskEl.className = 'risk-badge risk-' + riskLabel.toLowerCase().replace(' ', '');
             
             const severity = data.risk_assessment?.severity || 'none';
@@ -732,7 +946,7 @@
                         ${diplotypeHtml}
                         <div class="result-item">
                             <span class="result-label">Risk:</span>
-                            <span class="result-value"><span class="risk-badge risk-${drugRiskLabel.toLowerCase().replace(' ', '')}">${drugRiskLabel}</span></span>
+                            <span class="result-value"><span class="risk-badge risk-${drugRiskLabel.toLowerCase().replace(' ', '')}">${getRiskIcon(drugRiskLabel)} ${drugRiskLabel}</span></span>
                         </div>
                         <div class="result-item">
                             <span class="result-label">Severity:</span>

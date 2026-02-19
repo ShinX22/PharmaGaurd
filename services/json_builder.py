@@ -30,6 +30,7 @@ def build_multi_drug_response(patient_id, drug_results, parsing_success):
     overall_confidence = 0.0
     has_toxic = False
     has_adjust = False
+    has_relevant = False
     max_severity = 0
     severity_map = {"none": 0, "low": 1, "moderate": 2, "high": 3, "critical": 4}
     
@@ -50,6 +51,8 @@ def build_multi_drug_response(patient_id, drug_results, parsing_success):
         
         if severity in severity_map:
             max_severity = max(max_severity, severity_map[severity])
+        
+        has_relevant = has_relevant or result.get("has_relevant_variant", False)
         
         drug_analyses.append(OrderedDict([
             ("drug", result.get("drug", "")),
@@ -78,6 +81,9 @@ def build_multi_drug_response(patient_id, drug_results, parsing_success):
     elif has_adjust:
         overall_risk_label = "Adjust Dosage"
         overall_severity = severity_labels.get(max_severity, "moderate")
+    elif not has_relevant:
+        overall_risk_label = "Unknown"
+        overall_severity = "none"
     else:
         overall_risk_label = "Safe"
         overall_severity = severity_labels.get(max_severity, "low")
@@ -109,10 +115,7 @@ def build_multi_drug_response(patient_id, drug_results, parsing_success):
         ("llm_generated_explanation", OrderedDict([
             ("summary", overall_summary)
         ])),
-        ("drug_analyses", drug_analyses),
-        ("quality_metrics", OrderedDict([
-            ("vcf_parsing_success", parsing_success)
-        ]))
+        ("drug_analyses", drug_analyses)
     ])
 
 

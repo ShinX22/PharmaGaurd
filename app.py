@@ -1,11 +1,10 @@
-import os
 from flask import Flask, request, jsonify, render_template
 from services.vcf_parser import parse_vcf
 from services.phenotype_engine import determine_phenotype
 from services.risk_engine import PRIMARY_GENE_MAP, evaluate_risk
 from services.gemini_service import generate_explanation
 from services.json_builder import build_response, build_multi_drug_response
-from utils.validators import validate_file_extension, validate_file_size, validate_drugs
+from utils.validators import validate_file_extension, validate_file_size
 
 app = Flask(__name__)
 
@@ -92,6 +91,12 @@ def analyze():
             vcf_file.seek(0)
             variants = parse_vcf(vcf_file.stream)
             parsing_success = True
+        except ValueError as e:
+            variants = []
+            return jsonify({
+                "error": str(e),
+                "error_code": "INVALID_VCF_FORMAT"
+            }), 400
         except Exception:
             variants = []
             return jsonify({
@@ -117,10 +122,13 @@ def analyze():
 
             risk_label, severity, confidence = evaluate_risk(drug_original, phenotype)
 
-            try:
-                explanation = generate_explanation(primary_gene, phenotype, drug_original)
-            except Exception as e:
-                explanation = f"Analysis completed. Phenotype {phenotype} detected for {primary_gene} gene. Clinical interpretation should be confirmed with laboratory testing."
+            if not relevant:
+                explanation = "No actionable pharmacogenomic variants detected."
+            else:
+                try:
+                    explanation = generate_explanation(primary_gene, phenotype, drug_original)
+                except Exception:
+                    explanation = f"Analysis completed. Phenotype {phenotype} detected for {primary_gene} gene. Clinical interpretation should be confirmed with laboratory testing."
 
             response = build_response(
                 patient_id, drug_original, primary_gene, phenotype,
@@ -145,10 +153,13 @@ def analyze():
 
                 risk_label, severity, confidence = evaluate_risk(drug_original, phenotype)
 
-                try:
-                    explanation = generate_explanation(primary_gene, phenotype, drug_original)
-                except Exception as e:
-                    explanation = f"Analysis completed. Phenotype {phenotype} detected for {primary_gene} gene. Clinical interpretation should be confirmed with laboratory testing."
+                if not relevant:
+                    explanation = "No actionable pharmacogenomic variants detected."
+                else:
+                    try:
+                        explanation = generate_explanation(primary_gene, phenotype, drug_original)
+                    except Exception:
+                        explanation = f"Analysis completed. Phenotype {phenotype} detected for {primary_gene} gene. Clinical interpretation should be confirmed with laboratory testing."
 
                 drug_results.append({
                     "drug": drug_original,
@@ -158,7 +169,8 @@ def analyze():
                     "severity": severity,
                     "confidence": confidence,
                     "rsids": rsids,
-                    "explanation": explanation
+                    "explanation": explanation,
+                    "has_relevant_variant": bool(relevant)
                 })
 
             response = build_multi_drug_response(patient_id, drug_results, parsing_success)
