@@ -172,5 +172,3 @@ def request_entity_too_large(error):
         "error_code": "FILE_TOO_LARGE"
     }), 413
 
-if __name__ == "__main__":
-    app.run(debug=True)
