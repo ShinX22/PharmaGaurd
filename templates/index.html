@@ -1,0 +1,809 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Pharmacogenomics Analysis</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+        
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, Oxygen, Ubuntu, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+        
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            overflow: hidden;
+        }
+        
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+        
+        .header h1 {
+            font-size: 28px;
+            margin-bottom: 8px;
+        }
+        
+        .header p {
+            opacity: 0.9;
+            font-size: 14px;
+        }
+        
+        .form-container {
+            padding: 30px;
+        }
+        
+        .form-group {
+            margin-bottom: 20px;
+        }
+        
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #333;
+        }
+        
+        .form-group input,
+        .form-group select {
+            width: 100%;
+            padding: 12px 16px;
+            border: 2px solid #e0e0e0;
+            border-radius: 8px;
+            font-size: 16px;
+            transition: border-color 0.3s;
+        }
+        
+        .form-group input:focus,
+        .form-group select:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+        
+        .file-upload {
+            border: 2px dashed #ccc;
+            padding: 30px;
+            text-align: center;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.3s;
+        }
+        
+        .file-upload:hover {
+            border-color: #667eea;
+            background: #f8f9ff;
+        }
+        
+        .file-upload input[type="file"] {
+            display: none;
+        }
+        
+        .file-upload-label {
+            color: #667eea;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        
+        .file-name {
+            margin-top: 10px;
+            color: #666;
+            font-size: 14px;
+        }
+        
+        .submit-btn {
+            width: 100%;
+            padding: 16px;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            border-radius: 8px;
+            font-size: 18px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+        
+        .submit-btn:hover:not(:disabled) {
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(102, 126, 234, 0.4);
+        }
+        
+        .submit-btn:disabled {
+            opacity: 0.7;
+            cursor: not-allowed;
+        }
+        
+        .loading {
+            display: none;
+            text-align: center;
+            padding: 40px;
+        }
+        
+        .spinner {
+            border: 4px solid #f3f3f3;
+            border-top: 4px solid #667eea;
+            border-radius: 50%;
+            width: 50px;
+            height: 50px;
+            animation: spin 1s linear infinite;
+            margin: 0 auto 20px;
+        }
+        
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+        
+        .result-container {
+            display: none;
+            padding: 30px;
+        }
+        
+        .result-header {
+            background: #f0f0f0;
+            padding: 15px;
+            border-radius: 8px;
+            margin-bottom: 20px;
+            font-weight: 600;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        
+        .result-section {
+            margin-bottom: 20px;
+            padding: 20px;
+            border-radius: 8px;
+            border-left: 4px solid #667eea;
+            background: #f8f9ff;
+        }
+        
+        .result-section h3 {
+            color: #667eea;
+            margin-bottom: 12px;
+            font-size: 16px;
+        }
+        
+        .result-item {
+            display: flex;
+            margin-bottom: 8px;
+        }
+        
+        .result-label {
+            font-weight: 600;
+            width: 160px;
+            color: #555;
+        }
+        
+        .result-value {
+            color: #333;
+        }
+        
+        .risk-badge {
+            display: inline-block;
+            padding: 6px 16px;
+            border-radius: 20px;
+            font-weight: 600;
+            font-size: 14px;
+        }
+        
+        .risk-toxic { background: #ffebee; color: #c62828; }
+        .risk-adjust { background: #fff3e0; color: #ef6c00; }
+        .risk-safe { background: #e8f5e9; color: #2e7d32; }
+        .risk-unknown { background: #eceff1; color: #546e7a; }
+        
+        .severity-none { color: #9e9e9e; }
+        .severity-low { color: #4caf50; }
+        .severity-moderate { color: #ff9800; }
+        .severity-high { color: #f44336; }
+        .severity-critical { color: #b71c1c; }
+        
+        .error-container {
+            display: none;
+            padding: 30px;
+        }
+        
+        .error-message {
+            background: #ffebee;
+            border: 1px solid #ffcdd2;
+            color: #c62828;
+            padding: 20px;
+            border-radius: 8px;
+            text-align: center;
+        }
+        
+        .json-output {
+            background: #263238;
+            color: #aed581;
+            padding: 20px;
+            border-radius: 8px;
+            overflow-x: auto;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+        
+        .file-size {
+            font-size: 12px;
+            color: #666;
+            margin-top: 5px;
+        }
+        
+        .file-size.warning {
+            color: #ff9800;
+        }
+        
+        .file-size.error {
+            color: #f44336;
+        }
+        
+        .action-buttons {
+            display: flex;
+            gap: 10px;
+            margin-top: 15px;
+        }
+        
+        .action-btn {
+            padding: 10px 16px;
+            border: none;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+        
+        .btn-download {
+            background: #4caf50;
+            color: white;
+        }
+        
+        .btn-download:hover {
+            background: #43a047;
+        }
+        
+        .btn-copy {
+            background: #2196f3;
+            color: white;
+        }
+        
+        .btn-copy:hover {
+            background: #1e88e5;
+        }
+        
+        .btn-copy.copied {
+            background: #4caf50;
+        }
+        
+        .btn-back {
+            background: #78909c;
+            color: white;
+            text-decoration: none;
+            display: inline-block;
+        }
+        
+        .btn-back:hover {
+            background: #607d8b;
+        }
+        
+        .btn-back-header {
+            background: #78909c;
+            color: white;
+            text-decoration: none;
+            padding: 8px 16px;
+            border-radius: 6px;
+            font-size: 14px;
+            font-weight: 500;
+            transition: background 0.2s;
+        }
+        
+        .btn-back-header:hover {
+            background: #607d8b;
+        }
+        
+        .error-code {
+            font-size: 12px;
+            color: #999;
+            margin-top: 8px;
+            font-family: monospace;
+        }
+        
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            right: 20px;
+            background: #333;
+            color: white;
+            padding: 12px 20px;
+            border-radius: 8px;
+            font-size: 14px;
+            opacity: 0;
+            transition: opacity 0.3s;
+            z-index: 1000;
+        }
+        
+        .toast.show {
+            opacity: 1;
+        }
+        
+        .multi-drug-result {
+            margin-top: 20px;
+        }
+        
+        .drug-card {
+            background: #f5f5f5;
+            border-left: 4px solid #667eea;
+            padding: 15px;
+            margin-bottom: 15px;
+            border-radius: 4px;
+        }
+        
+        .drug-card h4 {
+            color: #667eea;
+            margin-bottom: 10px;
+        }
+    </style>
+    <link rel="shortcut icon" href="../src/image.png" type="image/x-icon">
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>Pharmacogenomics Analysis</h1>
+            <p>Upload VCF file and analyze drug-gene interactions</p>
+        </div>
+        
+        <div class="form-container" id="formContainer">
+            <form id="analysisForm" method="POST" enctype="multipart/form-data">
+                <div class="form-group">
+                    <label for="patient_id">Patient ID</label>
+                    <input type="text" id="patient_id" name="patient_id" placeholder="Enter patient ID" required>
+                </div>
+                
+                <div class="form-group">
+                    <label for="drug_input">Drug(s)</label>
+                    <input type="text" id="drug_input" name="drug_input" placeholder="Enter drug(s), comma-separated (e.g., Codeine, Warfarin)" required>
+                    <small style="color: #666; font-size: 12px;">Supported drugs: CODEINE, WARFARIN, CLOPIDOGREL, SIMVASTATIN, AZATHIOPRINE, FLUOROURACIL</small>
+                    <small style="color: #666; font-size: 12px;">Enter multiple drugs separated by commas.</small>
+                </div>
+                
+                <div class="form-group">
+                    <label>VCF File Upload (Max 5MB)</label>
+                    <div class="file-upload" onclick="document.getElementById('vcf_file').click()">
+                        <input type="file" id="vcf_file" name="vcf_file" accept=".vcf" required>
+                        <span class="file-upload-label">Click to upload VCF file</span>
+                        <div class="file-name" id="fileName"></div>
+                        <div class="file-size" id="fileSize"></div>
+                    </div>
+                </div>
+                
+                <button type="submit" class="submit-btn" id="submitBtn">Analyze Pharmacogenomics</button>
+            </form>
+        </div>
+        
+        <div class="loading" id="loading">
+            <div class="spinner"></div>
+            <p>Analyzing pharmacogenomic data...</p>
+        </div>
+        
+        <div class="error-container" id="errorContainer">
+            <div class="error-message" id="errorMessage"></div>
+        </div>
+        
+        <div class="result-container" id="resultContainer">
+            <div class="result-header">
+                <span>Analysis Complete</span>
+                <a href="/" class="btn-back-header">Back to Home</a>
+            </div>
+            
+            <div class="result-section">
+                <h3>Patient & Drug Information</h3>
+                <div class="result-item">
+                    <span class="result-label">Patient ID:</span>
+                    <span class="result-value" id="resPatientId"></span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Drug:</span>
+                    <span class="result-value" id="resDrug"></span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Timestamp:</span>
+                    <span class="result-value" id="resTimestamp"></span>
+                </div>
+            </div>
+            
+            <div class="result-section">
+                <h3>Risk Assessment</h3>
+                <div class="result-item">
+                    <span class="result-label">Risk Label:</span>
+                    <span class="result-value"><span class="risk-badge" id="resRiskLabel"></span></span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Severity:</span>
+                    <span class="result-value" id="resSeverity"></span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Confidence Score:</span>
+                    <span class="result-value" id="resConfidence"></span>
+                </div>
+            </div>
+            
+            <div class="result-section" id="pgxProfileSection">
+                <h3>Pharmacogenomic Profile</h3>
+                <div class="result-item">
+                    <span class="result-label">Primary Gene:</span>
+                    <span class="result-value" id="resGene"></span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Phenotype:</span>
+                    <span class="result-value" id="resPhenotype"></span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Diplotype:</span>
+                    <span class="result-value" id="resDiplotype"></span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Detected Variants:</span>
+                    <span class="result-value" id="resVariants"></span>
+                </div>
+            </div>
+            
+            <div class="result-section" id="clinicalRecSection">
+                <h3>Clinical Recommendation</h3>
+                <div class="result-item">
+                    <span class="result-label">Action:</span>
+                    <span class="result-value" id="resAction"></span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Dose Adjustment:</span>
+                    <span class="result-value" id="resDose"></span>
+                </div>
+                <div class="result-item">
+                    <span class="result-label">Monitoring:</span>
+                    <span class="result-value" id="resMonitoring"></span>
+                </div>
+            </div>
+            
+            <div class="result-section">
+                <h3>Explanation</h3>
+                <p id="resExplanation"></p>
+            </div>
+            
+            <div class="result-section">
+                <h3>Raw JSON Response</h3>
+                <pre class="json-output" id="resJson"></pre>
+                <div class="action-buttons">
+                    <button type="button" class="action-btn btn-download" onclick="downloadJson()">Download JSON</button>
+                    <button type="button" class="action-btn btn-copy" onclick="copyToClipboard()" id="copyBtn">Copy to Clipboard</button>
+                </div>
+            </div>
+            
+            <div class="result-section" id="multiDrugSection" style="display: none;">
+                <h3>Multi-Drug Analysis Results</h3>
+                <div id="multiDrugResults"></div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const MAX_FILE_SIZE = 5 * 1024 * 1024;
+        
+        const form = document.getElementById('analysisForm');
+        const fileInput = document.getElementById('vcf_file');
+        const fileName = document.getElementById('fileName');
+        const fileSizeEl = document.getElementById('fileSize');
+        const formContainer = document.getElementById('formContainer');
+        const loading = document.getElementById('loading');
+        const resultContainer = document.getElementById('resultContainer');
+        const errorContainer = document.getElementById('errorContainer');
+        const errorMessage = document.getElementById('errorMessage');
+        const submitBtn = document.getElementById('submitBtn');
+        
+        let currentJsonData = null;
+
+        function formatFileSize(bytes) {
+            if (bytes < 1024) return bytes + ' B';
+            if (bytes < 1024 * 1024) return (bytes / 1024).toFixed(1) + ' KB';
+            return (bytes / (1024 * 1024)).toFixed(2) + ' MB';
+        }
+
+        fileInput.addEventListener('change', function() {
+            if (this.files.length > 0) {
+                const file = this.files[0];
+                fileName.textContent = file.name;
+                
+                const size = file.size;
+                fileSizeEl.textContent = 'Size: ' + formatFileSize(size);
+                
+                if (size > MAX_FILE_SIZE) {
+                    fileSizeEl.className = 'file-size error';
+                    fileSizeEl.textContent += ' - File too large! Maximum is 5MB.';
+                    submitBtn.disabled = true;
+                } else if (size > MAX_FILE_SIZE * 0.8) {
+                    fileSizeEl.className = 'file-size warning';
+                    fileSizeEl.textContent += ' - Approaching size limit';
+                    submitBtn.disabled = false;
+                } else {
+                    fileSizeEl.className = 'file-size';
+                    submitBtn.disabled = false;
+                }
+            } else {
+                fileName.textContent = '';
+                fileSizeEl.textContent = '';
+                submitBtn.disabled = false;
+            }
+        });
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const drugInput = document.getElementById('drug_input');
+            const finalDrug = drugInput.value.trim();
+            
+            if (!finalDrug) {
+                showError('Please enter at least one drug');
+                return;
+            }
+            
+            if (fileInput.files.length > 0 && fileInput.files[0].size > MAX_FILE_SIZE) {
+                showError('File too large. Maximum size is 5MB.');
+                return;
+            }
+            
+            const formData = new FormData();
+            formData.append('patient_id', document.getElementById('patient_id').value);
+            formData.append('drug_input', finalDrug);
+            formData.append('vcf_file', fileInput.files[0]);
+            
+            formContainer.style.display = 'none';
+            resultContainer.style.display = 'none';
+            errorContainer.style.display = 'none';
+            loading.style.display = 'block';
+            submitBtn.disabled = true;
+
+            try {
+                const response = await fetch('/analyze', {
+                    method: 'POST',
+                    body: formData
+                });
+
+                const data = await response.json();
+
+                loading.style.display = 'none';
+                submitBtn.disabled = false;
+
+                if (!response.ok) {
+                    errorContainer.style.display = 'block';
+                    let errorText = data.error || 'An error occurred';
+                    if (data.error_code) {
+                        errorText += '<div class="error-code">Error code: ' + data.error_code + '</div>';
+                    }
+                    errorMessage.innerHTML = errorText;
+                    formContainer.style.display = 'block';
+                    return;
+                }
+
+                displayResult(data);
+
+            } catch (error) {
+                loading.style.display = 'none';
+                submitBtn.disabled = false;
+                errorContainer.style.display = 'block';
+                errorMessage.innerHTML = 'Network error: ' + error.message + '<div class="error-code">Error code: NETWORK_ERROR</div>';
+                formContainer.style.display = 'block';
+            }
+        });
+
+        function showError(message) {
+            errorContainer.style.display = 'block';
+            errorMessage.innerHTML = message;
+            formContainer.style.display = 'block';
+        }
+
+        function displayResult(data) {
+            resultContainer.style.display = 'block';
+            currentJsonData = data;
+            
+            document.getElementById('resPatientId').textContent = data.patient_id || 'N/A';
+            document.getElementById('resDrug').textContent = data.drug || 'N/A';
+            document.getElementById('resTimestamp').textContent = data.timestamp || 'N/A';
+            
+            if (data.drug_analyses && data.drug_analyses.length > 0) {
+                displayMultiDrugResults(data);
+            } else {
+                displaySingleDrugResult(data);
+            }
+            
+            document.getElementById('resJson').textContent = JSON.stringify(data, null, 2);
+        }
+
+        function displaySingleDrugResult(data) {
+            document.getElementById('multiDrugSection').style.display = 'none';
+            document.getElementById('pgxProfileSection').style.display = 'block';
+            document.getElementById('clinicalRecSection').style.display = 'block';
+            
+            const riskLabel = data.risk_assessment?.risk_label || 'Unknown';
+            const riskEl = document.getElementById('resRiskLabel');
+            riskEl.textContent = riskLabel;
+            riskEl.className = 'risk-badge risk-' + riskLabel.toLowerCase().replace(' ', '');
+            
+            const severity = data.risk_assessment?.severity || 'none';
+            const sevEl = document.getElementById('resSeverity');
+            sevEl.textContent = severity.charAt(0).toUpperCase() + severity.slice(1);
+            sevEl.className = 'result-value severity-' + severity;
+            
+            document.getElementById('resConfidence').textContent = 
+                (data.risk_assessment?.confidence_score ?? 0).toFixed(2);
+            
+            document.getElementById('resGene').textContent = 
+                data.pharmacogenomic_profile?.primary_gene || '';
+            document.getElementById('resPhenotype').textContent = 
+                data.pharmacogenomic_profile?.phenotype || '';
+            
+            const diplotype = data.pharmacogenomic_profile?.diplotype;
+            document.getElementById('resDiplotype').textContent = diplotype || '';
+            
+            const variants = data.pharmacogenomic_profile?.detected_variants || [];
+            document.getElementById('resVariants').textContent = 
+                variants.length > 0 ? variants.map(v => v.rsid).join(', ') : '';
+            
+            document.getElementById('resAction').textContent = 
+                data.clinical_recommendation?.action || '';
+            document.getElementById('resDose').textContent = 
+                data.clinical_recommendation?.dose_adjustment || '';
+            document.getElementById('resMonitoring').textContent = 
+                data.clinical_recommendation?.monitoring || '';
+            
+            document.getElementById('resExplanation').textContent = 
+                data.llm_generated_explanation?.summary || '';
+        }
+
+        function displayMultiDrugResults(data) {
+            const multiSection = document.getElementById('multiDrugSection');
+            const multiContainer = document.getElementById('multiDrugResults');
+            const pgxSection = document.getElementById('pgxProfileSection');
+            const clinicalSection = document.getElementById('clinicalRecSection');
+            
+            multiSection.style.display = 'block';
+            pgxSection.style.display = 'none';
+            clinicalSection.style.display = 'none';
+            
+            const riskLabel = data.risk_assessment?.risk_label || 'Unknown';
+            const riskEl = document.getElementById('resRiskLabel');
+            riskEl.textContent = riskLabel;
+            riskEl.className = 'risk-badge risk-' + riskLabel.toLowerCase().replace(' ', '');
+            
+            const severity = data.risk_assessment?.severity || 'none';
+            const sevEl = document.getElementById('resSeverity');
+            sevEl.textContent = severity.charAt(0).toUpperCase() + severity.slice(1);
+            sevEl.className = 'result-value severity-' + severity;
+            
+            document.getElementById('resConfidence').textContent = 
+                (data.risk_assessment?.confidence_score ?? 0).toFixed(2);
+            
+            document.getElementById('resExplanation').textContent = 
+                data.llm_generated_explanation?.summary || '';
+            
+            let html = '';
+            data.drug_analyses.forEach((analysis, index) => {
+                const drugRiskLabel = analysis.risk_assessment?.risk_label || 'Unknown';
+                const drugSeverity = analysis.risk_assessment?.severity || 'none';
+                const diplotype = analysis.pharmacogenomic_profile?.diplotype;
+                
+                let diplotypeHtml = '';
+                if (diplotype) {
+                    diplotypeHtml = `
+                        <div class="result-item">
+                            <span class="result-label">Diplotype:</span>
+                            <span class="result-value">${diplotype}</span>
+                        </div>
+                    `;
+                }
+                
+                html += `
+                    <div class="drug-card">
+                        <h4>${analysis.drug}</h4>
+                        <div class="result-item">
+                            <span class="result-label">Gene:</span>
+                            <span class="result-value">${analysis.pharmacogenomic_profile?.primary_gene || ''}</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Phenotype:</span>
+                            <span class="result-value">${analysis.pharmacogenomic_profile?.phenotype || ''}</span>
+                        </div>
+                        ${diplotypeHtml}
+                        <div class="result-item">
+                            <span class="result-label">Risk:</span>
+                            <span class="result-value"><span class="risk-badge risk-${drugRiskLabel.toLowerCase().replace(' ', '')}">${drugRiskLabel}</span></span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Severity:</span>
+                            <span class="result-value severity-${drugSeverity}">${drugSeverity.charAt(0).toUpperCase() + drugSeverity.slice(1)}</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Confidence:</span>
+                            <span class="result-value">${(analysis.risk_assessment?.confidence_score ?? 0).toFixed(2)}</span>
+                        </div>
+                        <div class="result-item">
+                            <span class="result-label">Action:</span>
+                            <span class="result-value">${analysis.clinical_recommendation?.action || ''}</span>
+                        </div>
+                        <div class="result-item" style="margin-top: 10px;">
+                            <span class="result-label">Explanation:</span>
+                            <span class="result-value">${analysis.llm_generated_explanation?.summary || ''}</span>
+                        </div>
+                    </div>
+                `;
+            });
+            
+            multiContainer.innerHTML = html;
+        }
+
+        function downloadJson() {
+            if (!currentJsonData) return;
+            
+            const blob = new Blob([JSON.stringify(currentJsonData, null, 2)], { type: 'application/json' });
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = 'pharmacogenomics_result.json';
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            URL.revokeObjectURL(url);
+            
+            showToast('JSON downloaded successfully');
+        }
+
+        function copyToClipboard() {
+            if (!currentJsonData) return;
+            
+            navigator.clipboard.writeText(JSON.stringify(currentJsonData, null, 2)).then(() => {
+                const btn = document.getElementById('copyBtn');
+                btn.textContent = 'Copied!';
+                btn.classList.add('copied');
+                showToast('Copied to clipboard');
+                
+                setTimeout(() => {
+                    btn.textContent = 'Copy to Clipboard';
+                    btn.classList.remove('copied');
+                }, 2000);
+            }).catch(err => {
+                showToast('Failed to copy');
+            });
+        }
+
+        function showToast(message) {
+            const toast = document.createElement('div');
+            toast.className = 'toast';
+            toast.textContent = message;
+            document.body.appendChild(toast);
+            
+            setTimeout(() => toast.classList.add('show'), 10);
+            
+            setTimeout(() => {
+                toast.classList.remove('show');
+                setTimeout(() => document.body.removeChild(toast), 300);
+            }, 3000);
+        }
+    </script>
+</body>
+</html>
